@@ -3,20 +3,26 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Monitor de Ruído para Sala de Aula</title>
+  <title>Semáforo de Ruído - Sala de Aula</title>
   <style>
     :root {
-      --bg: #0f172a;
-      --card: #1e293b;
-      --text: #f8fafc;
-      --muted: #94a3b8;
-      --green: #22c55e;
-      --yellow: #eab308;
+      --bg: #0b132b;
+      --card-bg: #1c2541;
+      --text: #ffffff;
+      --subtext: #8d99ae;
+      --green: #10b981;
+      --yellow: #f59e0b;
       --red: #ef4444;
-      --primary: #3b82f6;
+      --btn-bg: #3a506b;
+      --btn-hover: #4ea8de;
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    }
 
     body {
       background-color: var(--bg);
@@ -25,97 +31,106 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      padding: 20px;
+      padding: 16px;
     }
 
-    .dashboard {
+    .container {
       width: 100%;
-      max-width: 480px;
-      background: var(--card);
+      max-width: 450px;
+      background: var(--card-bg);
       border-radius: 24px;
-      padding: 28px;
-      box-shadow: 0 20px 25px -5px rgba(0,0,0,0.5);
+      padding: 24px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
       display: flex;
       flex-direction: column;
       gap: 20px;
     }
 
-    header {
+    .header {
       text-align: center;
     }
 
-    header h1 {
-      font-size: 1.4rem;
+    .header h1 {
+      font-size: 1.5rem;
       font-weight: 700;
-      margin-bottom: 4px;
+      color: #ffffff;
     }
 
-    header p {
-      color: var(--muted);
+    .header p {
       font-size: 0.85rem;
+      color: var(--subtext);
+      margin-top: 4px;
     }
 
-    .main-display {
+    .panel {
+      background: rgba(0, 0, 0, 0.25);
+      border-radius: 20px;
+      padding: 20px;
       display: flex;
       align-items: center;
       justify-content: space-around;
-      background: rgba(0, 0, 0, 0.25);
-      padding: 20px;
-      border-radius: 18px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
     }
 
+    /* Semáforo */
     .semaforo {
+      background: #0a0f1d;
+      padding: 12px;
+      border-radius: 25px;
       display: flex;
       flex-direction: column;
-      gap: 10px;
-      background: #090d16;
-      padding: 14px;
-      border-radius: 30px;
-      border: 2px solid #334155;
+      gap: 12px;
+      border: 2px solid #2b3a55;
     }
 
     .luz {
-      width: 50px;
-      height: 50px;
+      width: 54px;
+      height: 54px;
       border-radius: 50%;
       opacity: 0.15;
-      transition: all 0.2s ease;
+      transition: opacity 0.2s ease, box-shadow 0.2s ease;
     }
 
-    .verde { background-color: var(--green); }
-    .amarelo { background-color: var(--yellow); }
     .vermelho { background-color: var(--red); }
+    .amarelo { background-color: var(--yellow); }
+    .verde { background-color: var(--green); }
 
-    .verde.ativo { opacity: 1; box-shadow: 0 0 20px var(--green); }
-    .amarelo.ativo { opacity: 1; box-shadow: 0 0 20px var(--yellow); }
-    .vermelho.ativo { opacity: 1; box-shadow: 0 0 20px var(--red); }
+    .vermelho.ativo { opacity: 1; box-shadow: 0 0 24px var(--red); }
+    .amarelo.ativo { opacity: 1; box-shadow: 0 0 24px var(--yellow); }
+    .verde.ativo { opacity: 1; box-shadow: 0 0 24px var(--green); }
 
-    .metrics {
+    /* Leitura de Ruído */
+    .readout {
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 6px;
+      gap: 8px;
     }
 
-    .val-display {
-      font-size: 3.2rem;
+    .val-num {
+      font-size: 3.5rem;
       font-weight: 800;
+      line-height: 1;
       font-variant-numeric: tabular-nums;
     }
 
-    .status-badge {
-      padding: 4px 12px;
-      border-radius: 12px;
-      font-size: 0.8rem;
+    .badge {
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 0.85rem;
       font-weight: 700;
       text-transform: uppercase;
+      letter-spacing: 0.5px;
+      background: #2b3a55;
+      color: var(--subtext);
     }
 
+    /* Barra de Volume */
     .meter-container {
       width: 100%;
-      background: #090d16;
-      height: 10px;
-      border-radius: 5px;
+      height: 12px;
+      background: #0a0f1d;
+      border-radius: 6px;
       overflow: hidden;
     }
 
@@ -126,136 +141,174 @@
       transition: width 0.1s linear, background-color 0.2s ease;
     }
 
+    /* Controles */
     .controls {
       display: flex;
       flex-direction: column;
       gap: 10px;
     }
 
-    .btn-group {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
+    .btn-row {
+      display: flex;
       gap: 10px;
     }
 
     .btn {
-      padding: 12px 16px;
+      flex: 1;
+      padding: 14px;
       border-radius: 12px;
       border: none;
+      font-size: 0.95rem;
       font-weight: 600;
-      font-size: 0.9rem;
       cursor: pointer;
-      transition: all 0.2s;
+      color: white;
+      background-color: var(--btn-bg);
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
     }
 
-    .btn-primary { background: var(--primary); color: white; }
-    .btn-secondary { background: #334155; color: white; }
-    .btn-warning { background: #d97706; color: white; grid-column: span 2; }
-    
-    .btn:disabled { opacity: 0.4; cursor: not-allowed; }
-    .btn:active:not(:disabled) { transform: scale(0.98); }
+    .btn:hover:not(:disabled) {
+      filter: brightness(1.15);
+    }
 
-    .calibration-info {
-      font-size: 0.78rem;
-      color: var(--muted);
+    .btn-main {
+      background-color: #2563eb;
+    }
+
+    .btn-stop {
+      background-color: #dc2626;
+    }
+
+    .btn:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+    }
+
+    .btn:active:not(:disabled) {
+      transform: scale(0.98);
+    }
+
+    .info-box {
+      font-size: 0.8rem;
+      color: var(--subtext);
       text-align: center;
-      background: rgba(255, 255, 255, 0.03);
-      padding: 10px;
-      border-radius: 8px;
+      background: rgba(0, 0, 0, 0.2);
+      padding: 12px;
+      border-radius: 10px;
+      line-height: 1.4;
     }
   </style>
 </head>
 <body>
 
-  <div class="dashboard">
-    <header>
+  <div class="container">
+    <header class="header">
       <h1>Monitor de Ruído</h1>
       <p>Controle sonoro da sala de aula</p>
     </header>
 
-    <div class="main-display">
+    <div class="panel">
       <div class="semaforo">
-        <div id="vermelho" class="luz vermelho"></div>
-        <div id="amarelo" class="luz amarelo"></div>
-        <div id="verde" class="luz verde"></div>
+        <div id="luzVermelho" class="luz vermelho"></div>
+        <div id="luzAmarelo" class="luz amarelo"></div>
+        <div id="luzVerde" class="luz verde"></div>
       </div>
-      
-      <div class="metrics">
-        <span class="val-display" id="txtNivel">0</span>
-        <span id="badgeStatus" class="status-badge" style="background: #334155; color: #fff;">Inativo</span>
+
+      <div class="readout">
+        <span id="txtNivel" class="val-num">0</span>
+        <span id="badgeStatus" class="badge">Inativo</span>
       </div>
     </div>
 
-    <div>
-      <div class="meter-container">
-        <div id="meterBar" class="meter-bar"></div>
-      </div>
+    <div class="meter-container">
+      <div id="meterBar" class="meter-bar"></div>
     </div>
 
     <div class="controls">
-      <button id="btnIniciar" class="btn btn-primary">Iniciar Escuta</button>
+      <button id="btnIniciar" class="btn btn-main">▶ Iniciar Escuta</button>
       
-      <div class="btn-group">
-        <button id="btnPausar" class="btn btn-secondary" disabled>Pausar</button>
-        <button id="btnCalibrar" class="btn btn-secondary" disabled>Calibrar</button>
+      <div class="btn-row">
+        <button id="btnPausar" class="btn" disabled>⏸ Pausar</button>
+        <button id="btnCalibrar" class="btn" disabled>🎯 Calibrar</button>
       </div>
     </div>
 
-    <div id="infoCalibracao" class="calibration-info">
-      Clique em "Iniciar" para dar acesso ao microfone.
+    <div id="infoStatus" class="info-box">
+      Clique em <strong>Iniciar Escuta</strong> para permitir o acesso ao microfone.
     </div>
   </div>
 
   <script>
-    let audioContext, analyser, microphone, stream;
-    let dataArray;
+    let audioContext = null;
+    let analyser = null;
+    let microphone = null;
+    let stream = null;
+    let animFrameId = null;
+
     let isListening = false;
     let isCalibrating = false;
 
-    // Limites padrões de ruído (ajustados via calibração)
+    // Limites padrões de volume
     let limiteAmarelo = 25;
     let limiteVermelho = 50;
 
     const btnIniciar = document.getElementById('btnIniciar');
     const btnPausar = document.getElementById('btnPausar');
     const btnCalibrar = document.getElementById('btnCalibrar');
-    
-    const luzVerde = document.getElementById('verde');
-    const luzAmarelo = document.getElementById('amarelo');
-    const luzVermelho = document.getElementById('vermelho');
-    
+
+    const luzVerde = document.getElementById('luzVerde');
+    const luzAmarelo = document.getElementById('luzAmarelo');
+    const luzVermelho = document.getElementById('luzVermelho');
+
     const txtNivel = document.getElementById('txtNivel');
     const badgeStatus = document.getElementById('badgeStatus');
     const meterBar = document.getElementById('meterBar');
-    const infoCalibracao = document.getElementById('infoCalibracao');
+    const infoStatus = document.getElementById('infoStatus');
 
+    // Iniciar captação de áudio
     async function iniciarAudio() {
       try {
-        stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        analyser = audioContext.createAnalyser();
-        microphone = audioContext.createMediaStreamSource(stream);
-        
-        analyser.fftSize = 256;
-        microphone.connect(analyser);
-        dataArray = new Uint8Array(analyser.frequencyBinCount);
+        if (!stream) {
+          stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        }
+
+        if (!audioContext) {
+          audioContext = new (window.AudioContext || window.webkitAudioContext)();
+          analyser = audioContext.createAnalyser();
+          microphone = audioContext.createMediaStreamSource(stream);
+          analyser.fftSize = 256;
+          microphone.connect(analyser);
+        }
+
+        if (audioContext.state === 'suspended') {
+          await audioContext.resume();
+        }
 
         isListening = true;
+        
+        // Atualizar estado dos botões
         btnIniciar.style.display = 'none';
         btnPausar.disabled = false;
         btnCalibrar.disabled = false;
+
+        infoStatus.innerHTML = `Escutando... Limites atuais — Atenção: <strong>>${limiteAmarelo}</strong> | Alto: <strong>>${limiteVermelho}</strong>`;
         
-        infoCalibracao.innerText = `Limites atuais — Atenção: >${limiteAmarelo} | Alto: >${limiteVermelho}`;
-        processarAudio();
+        loopMonitoramento();
       } catch (err) {
-        alert('Permissão de microfone negada ou não suportada.');
+        alert('Não foi possível acessar o microfone. Verifique as permissões.');
       }
     }
 
-    function processarAudio() {
+    // Loop de leitura do volume
+    function loopMonitoramento() {
       if (!isListening) return;
 
+      const dataArray = new Uint8Array(analyser.frequencyBinCount);
       analyser.getByteFrequencyData(dataArray);
+
       let soma = 0;
       for (let i = 0; i < dataArray.length; i++) {
         soma += dataArray[i];
@@ -264,26 +317,27 @@
 
       if (!isCalibrating) {
         txtNivel.innerText = media;
-        
-        // Atualiza a barra visual
-        const porcentagem = Math.min(100, Math.max(0, (media / 100) * 100));
+
+        // Atualizar barra visual
+        const porcentagem = Math.min(100, Math.max(0, (media / 90) * 100));
         meterBar.style.width = `${porcentagem}%`;
 
-        // Atualiza cores do semáforo
+        // Remover destaques
         luzVerde.classList.remove('ativo');
         luzAmarelo.classList.remove('ativo');
         luzVermelho.classList.remove('ativo');
 
+        // Lógica das cores do semáforo
         if (media < limiteAmarelo) {
           luzVerde.classList.add('ativo');
           badgeStatus.innerText = 'Adequado';
-          badgeStatus.style.background = 'rgba(34, 197, 94, 0.2)';
+          badgeStatus.style.background = 'rgba(16, 185, 129, 0.2)';
           badgeStatus.style.color = 'var(--green)';
           meterBar.style.backgroundColor = 'var(--green)';
         } else if (media < limiteVermelho) {
           luzAmarelo.classList.add('ativo');
           badgeStatus.innerText = 'Atenção';
-          badgeStatus.style.background = 'rgba(234, 179, 8, 0.2)';
+          badgeStatus.style.background = 'rgba(245, 158, 11, 0.2)';
           badgeStatus.style.color = 'var(--yellow)';
           meterBar.style.backgroundColor = 'var(--yellow)';
         } else {
@@ -295,70 +349,81 @@
         }
       }
 
-      requestAnimationFrame(processarAudio);
+      animFrameId = requestAnimationFrame(loopMonitoramento);
     }
 
-    // Alternar entre Pausar e Continuar
+    // Botão Pausar / Continuar
     btnPausar.addEventListener('click', () => {
-      if (audioContext.state === 'running') {
-        audioContext.suspend();
+      if (isListening) {
+        // Pausar
         isListening = false;
-        btnPausar.innerText = 'Continuar';
+        if (audioContext) audioContext.suspend();
+        cancelAnimationFrame(animFrameId);
+
+        btnPausar.innerText = '▶ Continuar';
+        btnPausar.classList.add('btn-main');
         badgeStatus.innerText = 'Pausado';
-        badgeStatus.style.background = '#334155';
-        badgeStatus.style.color = '#fff';
-      } else if (audioContext.state === 'suspended') {
-        audioContext.resume();
+        badgeStatus.style.background = '#2b3a55';
+        badgeStatus.style.color = 'var(--subtext)';
+        infoStatus.innerText = 'Monitoramento em pausa.';
+      } else {
+        // Continuar
         isListening = true;
-        btnPausar.innerText = 'Pausar';
-        processarAudio();
+        if (audioContext) audioContext.resume();
+        
+        btnPausar.innerText = '⏸ Pausar';
+        btnPausar.classList.remove('btn-main');
+        infoStatus.innerHTML = `Escutando... Limites atuais — Atenção: <strong>>${limiteAmarelo}</strong> | Alto: <strong>>${limiteVermelho}</strong>`;
+        
+        loopMonitoramento();
       }
     });
 
-    // Calibração Dinâmica Realista
+    // Função de Calibração
     btnCalibrar.addEventListener('click', () => {
-      if (isCalibrating) return;
+      if (isCalibrating || !isListening) return;
 
       isCalibrating = true;
       btnCalibrar.disabled = true;
       btnPausar.disabled = true;
 
       let amostras = [];
-      let tempoRestante = 3;
+      let segundosRestantes = 3;
 
-      infoCalibracao.innerText = `Calibrando... Fique em silêncio normal na sala (${tempoRestante}s)`;
+      infoStatus.innerHTML = `⏳ Calibrando ruído da sala... Fique em silêncio (${segundosRestantes}s)`;
 
-      const intervaloAmostragem = setInterval(() => {
+      const intervalo = setInterval(() => {
+        const dataArray = new Uint8Array(analyser.frequencyBinCount);
         analyser.getByteFrequencyData(dataArray);
         let soma = 0;
         for (let i = 0; i < dataArray.length; i++) soma += dataArray[i];
         amostras.push(soma / dataArray.length);
 
-        tempoRestante--;
-        if (tempoRestante > 0) {
-          infoCalibracao.innerText = `Calibrando... Fique em silêncio normal na sala (${tempoRestante}s)`;
+        segundosRestantes--;
+        if (segundosRestantes > 0) {
+          infoStatus.innerHTML = `⏳ Calibrando ruído da sala... Fique em silêncio (${segundosRestantes}s)`;
         }
       }, 1000);
 
       setTimeout(() => {
-        clearInterval(intervaloAmostragem);
-        
-        // Calcula a média do ruído de fundo (silêncio ambiente)
+        clearInterval(intervalo);
+
+        // Média do ruído de fundo capturado
         const mediaRuidoBase = amostras.reduce((a, b) => a + b, 0) / amostras.length;
-        
-        // Define o limite Amarelo como o ruído base + 15 pontos e o Vermelho como base + 35 pontos
-        limiteAmarelo = Math.round(mediaRuidoBase + 15);
-        limiteVermelho = Math.round(mediaRuidoBase + 35);
+
+        // Ajuste dinâmico das tolerâncias
+        limiteAmarelo = Math.round(mediaRuidoBase + 12);
+        limiteVermelho = Math.round(mediaRuidoBase + 28);
 
         isCalibrating = false;
         btnCalibrar.disabled = false;
         btnPausar.disabled = false;
 
-        infoCalibracao.innerText = `Calibrado! Base da sala: ${Math.round(mediaRuidoBase)} | Atenção: >${limiteAmarelo} | Alto: >${limiteVermelho}`;
+        infoStatus.innerHTML = `✅ Calibrado! Base da sala: <strong>${Math.round(mediaRuidoBase)}</strong> | Atenção: <strong>>${limiteAmarelo}</strong> | Alto: <strong>>${limiteVermelho}</strong>`;
       }, 3000);
     });
 
     btnIniciar.addEventListener('click', iniciarAudio);
   </script>
 </body>
-  </html>
+</html>
