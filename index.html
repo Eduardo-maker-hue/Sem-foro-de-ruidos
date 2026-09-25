@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Semáforo de Ruído</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      background-color: #1e1e1e;
+      color: #ffffff;
+      margin: 0;
+    }
+    .semaforo {
+      width: 120px;
+      background: #2a2a2a;
+      padding: 20px;
+      border-radius: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      align-items: center;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+    }
+    .luz {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      opacity: 0.2;
+      transition: opacity 0.2s, box-shadow 0.2s;
+    }
+    .vermelho { background-color: #ff3333; }
+    .amarelo { background-color: #ffcc00; }
+    .verde { background-color: #33cc33; }
+    .ativo { 
+      opacity: 1; 
+      box-shadow: 0 0 20px currentColor; 
+    }
+    button {
+      margin-top: 25px;
+      padding: 12px 24px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      border-radius: 8px;
+      border: none;
+      background-color: #007acc;
+      color: white;
+    }
+    button:hover {
+      background-color: #005999;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Semáforo de Ruído</h1>
+  <div class="semaforo">
+    <div id="vermelho" class="luz vermelho"></div>
+    <div id="amarelo" class="luz amarelo"></div>
+    <div id="verde" class="luz verde ativo"></div>
+  </div>
+  <p id="nivel">Nível de ruído: 0</p>
+  <button id="btnIniciar">Ativar Microfone</button>
+
+  <script>
+    const btnIniciar = document.getElementById('btnIniciar');
+    const luzVerde = document.getElementById('verde');
+    const luzAmarelo = document.getElementById('amarelo');
+    const luzVermelho = document.getElementById('vermelho');
+    const txtNivel = document.getElementById('nivel');
+
+    btnIniciar.addEventListener('click', async () => {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const analyser = audioContext.createAnalyser();
+        const microphone = audioContext.createMediaStreamSource(stream);
+        
+        analyser.fftSize = 256;
+        microphone.connect(analyser);
+
+        const dataArray = new Uint8Array(analyser.frequencyBinCount);
+
+        function monitorar() {
+          analyser.getByteFrequencyData(dataArray);
+          let soma = 0;
+          for (let i = 0; i < dataArray.length; i++) {
+            soma += dataArray[i];
+          }
+          const media = Math.round(soma / dataArray.length);
+          txtNivel.innerText = `Nível de ruído: ${media}`;
+
+          luzVerde.classList.remove('ativo');
+          luzAmarelo.classList.remove('ativo');
+          luzVermelho.classList.remove('ativo');
+
+          // Limites ajustáveis de acordo com a sensibilidade do microfone
+          if (media < 25) {
+            luzVerde.classList.add('ativo');
+          } else if (media < 50) {
+            luzAmarelo.classList.add('ativo');
+          } else {
+            luzVermelho.classList.add('ativo');
+          }
+
+          requestAnimationFrame(monitorar);
+        }
+
+        monitorar();
+        btnIniciar.style.display = 'none';
+      } catch (err) {
+        alert('Permissão de microfone negada ou não suportada.');
+      }
+    });
+  </script>
+</body>
+</html>
